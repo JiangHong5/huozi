@@ -110,7 +110,7 @@
 
         // 测试
         const inputArea = document.getElementById("input");
-        let originalSentence = "{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}";
+        let originalSentence = "";
         const outputPre = document.getElementById("output");
 
         document.getElementById("runBtn").onclick = () => {
@@ -125,8 +125,6 @@
         document.getElementById("enter-example").onclick = () => {
             inputArea.value = "示例：{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}";
         }
-        // 初始显示一次
-        outputPre.textContent = swappingWords(originalSentence, false);
     </script>
 </body>
 </html>
