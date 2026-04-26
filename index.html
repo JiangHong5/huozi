@@ -17,7 +17,8 @@
         </nav>
     </div>
     <h2>词语随机交换器</h2>
-    <p>原句：<br> {animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}</p>
+    <button id="enter-example">填入示例</button>
+    <textarea id="content" rows="3" cols="40" value="{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}"></textarea>
     <button id="runBtn">随机交换（不保留类别）</button>
     <button id="runKeepBtn">随机交换（保留类别）</button>
     <h3>结果：</h3>
@@ -107,10 +108,12 @@
         }
 
         // 测试
-        const originalSentence = "{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}";
+        const inputArea = document.getElementById("input");
+        let originalSentence = "{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}";
         const outputPre = document.getElementById("output");
 
         document.getElementById("runBtn").onclick = () => {
+            originalSentence = inputArea.value.trim();
             const res = swappingWords(originalSentence, false);
             outputPre.textContent = res;
         };
@@ -118,6 +121,9 @@
             const res = swappingWords(originalSentence, true);
             outputPre.textContent = res;
         };
+        document.getElementById("enter-example").onclick = () => {
+            inputArea.value = "示例：{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}";
+        }
         // 初始显示一次
         outputPre.textContent = swappingWords(originalSentence, false);
     </script>
