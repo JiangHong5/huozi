@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>词语随机交换器（浏览器版）</title>
+    <link rel="stylesheet" href="https://jianghong5.github.io/all_assets/css/viewport.css">
+</head>
+<body>
+    <div id="viewport">
+        <nav>
+            <div id="nav-items">
+                <img src="https://jianghong5.github.io/all_assets/img/icon.png" alt="icon" width="52" height="49" class="nav-item" id="icon">
+                <span class="nav-item" onclick="window.location.href='https://jianghong5.github.io/index.html'">首页</span>
+                <span class="nav-item" onclick="window.location.href='https://jianghong5.github.io/projects.html'">项目</span>
+                <span class="nav-item" onclick="window.location.href='https://jianghong5.github.io/blogs/'">博客</span>
+            </div>
+        </nav>
+    </div>
+    <h2>词语随机交换器</h2>
+    <p>原句：<br> {animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}</p>
+    <button id="runBtn">随机交换（不保留类别）</button>
+    <button id="runKeepBtn">随机交换（保留类别）</button>
+    <h3>结果：</h3>
+    <pre id="output"></pre>
+
+    <script>
+        // 随机打乱数组 (Fisher-Yates)
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 解析句子，提取所有模板 {类别:词语}
+        // 返回 { templates: [{cls, word}], 
+        //          orderedCls: 按出现顺序的类别列表,
+        //          templateStr: 将原句中 {cls:word} 替换为 {cls} 的字符串 }
+        function parseAndTemplate(sentence) {
+            const templates = [];
+            const orderedCls = [];
+            // 先收集所有模板及其类别、单词
+            let match;
+            const regex = /{([^:]+):([^}]+)}/g;
+            while ((match = regex.exec(sentence)) !== null) {
+                const cls = match[1].trim();
+                const word = match[2].trim();
+                templates.push({ cls, word });
+                orderedCls.push(cls);
+            }
+            // 生成纯净模板：把 {类别:单词} 替换为 {类别}
+            let templateStr = sentence;
+            for (const t of templates) {
+                const orig = `{${t.cls}:${t.word}}`;
+                const placeholder = `{${t.cls}}`;
+                templateStr = templateStr.replace(orig, placeholder);
+            }
+            return { templates, orderedCls, templateStr };
+        }
+
+        // 按类别分组单词
+        function classifyWords(templates) {
+            const classified = {};
+            for (const t of templates) {
+                if (!classified[t.cls]) classified[t.cls] = [];
+                classified[t.cls].push(t.word);
+            }
+            return classified;
+        }
+
+        // 打乱每个类别的单词
+        function shuffleWords(classified) {
+            const shuffled = {};
+            for (const cls in classified) {
+                shuffled[cls] = shuffleArray([...classified[cls]]);
+            }
+            return shuffled;
+        }
+
+        // 应用模板：按顺序将每个 {类别} 替换为打乱后的单词（依次使用）
+        function applyTemplate(templateStr, orderedCls, shuffledWords, keepClass = false) {
+            let result = templateStr;
+            // 为每个类别维护一个指针，依次取下一个词
+            const idxMap = {};
+            for (const cls of orderedCls) {
+                if (idxMap[cls] === undefined) idxMap[cls] = 0;
+            }
+            // 替换所有 {类别}
+            for (const cls of orderedCls) {
+                const placeholder = `{${cls}}`;
+                const wordList = shuffledWords[cls];
+                if (!wordList || wordList.length === 0) continue;
+                const word = wordList[idxMap[cls]++];
+                const replacement = keepClass ? `{${cls}:${word}}` : word;
+                result = result.replace(placeholder, replacement);
+            }
+            return result;
+        }
+
+        // 主函数
+        function swappingWords(sentence, keepClass = false) {
+            const { templates, orderedCls, templateStr } = parseAndTemplate(sentence);
+            const classified = classifyWords(templates);
+            const shuffled = shuffleWords(classified);
+            return applyTemplate(templateStr, orderedCls, shuffled, keepClass);
+        }
+
+        // 测试
+        const originalSentence = "{animal:cat} is {adjective:small} and {animal:dog} is {adjective:scary}. the {adjective:strange} {animal:fox} is playing with a {animal:duck}";
+        const outputPre = document.getElementById("output");
+
+        document.getElementById("runBtn").onclick = () => {
+            const res = swappingWords(originalSentence, false);
+            outputPre.textContent = res;
+        };
+        document.getElementById("runKeepBtn").onclick = () => {
+            const res = swappingWords(originalSentence, true);
+            outputPre.textContent = res;
+        };
+        // 初始显示一次
+        outputPre.textContent = swappingWords(originalSentence, false);
+    </script>
+</body>
+</html>
