@@ -119,6 +119,7 @@
             outputPre.textContent = res;
         };
         document.getElementById("runKeepBtn").onclick = () => {
+            originalSentence = inputArea.value.trim();
             const res = swappingWords(originalSentence, true);
             outputPre.textContent = res;
         };
